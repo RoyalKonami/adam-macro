@@ -11,7 +11,7 @@ print(screenWidth, screenHeight)
 
 
 def click_at(x, y):
-    pydirectinput.moveTo(x, y)
+    pydirectinput.moveTo(x-1, y)
     pydirectinput.moveRel(1, 0)
     pydirectinput.click()
 

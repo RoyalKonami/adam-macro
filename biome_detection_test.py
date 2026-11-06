@@ -1,4 +1,4 @@
-import os
+import os               #importhing stuff i might want
 import time
 import json
 import webbrowser
