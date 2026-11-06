@@ -1,0 +1,25 @@
+inv open            34, 508
+inv search bar      819, 367
+inv item 1          851, 470
+inv use button      686, 576
+inv number to use   574, 580
+
+collection          31, 451
+collection exit     384, 126
+
+portal exit         1422, 323 
+memory match exit   1234, 456
+jake leave          1252, 938
+jake exit           1852, 179
+bank exit           1234, 287
+quest board exit    971, 933
+
+flarg sell open     959, 942
+flarg first fish    829, 411
+flarg sell all      665, 802
+flarg confirm sell  794, 621
+flarg exit          1459, 261
+
+
+add all             834, 712
+craft               1104, 710
