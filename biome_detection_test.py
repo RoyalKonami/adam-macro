@@ -79,7 +79,7 @@ def get_end_biome_embed():
 #embed for aura equip
 def get_aura_embed():
     return discord_webhook.DiscordEmbed(
-        title=f"{equipped_aura} has been equipped",
+        title=f"{extracted_aura} has been equipped",
         description=f"The user {player_username} has equipped the aura {extracted_aura}.",
         color=0x00d62b
         )
@@ -144,16 +144,18 @@ with open(latest_log_file, 'r', encoding='utf-8', errors='ignore') as file:
         #compare for biomes
         for biome in BIOMES:
             if biome in clean_line.upper():
-                if biome != "NORMAL" and current_biome != biome:
+                if biome != "NORMAL" and current_biome != biome:    #checks if biome is not the last registered biome and is not normal, this is for br and sc changes during biome
                     last_biome = current_biome
                     current_biome = biome
+                    print(f"{last_biome} biome has ended.")
                     print(f"[BIOME DETECTED]:Biome is now {current_biome}!")
                     webhook = discord_webhook.DiscordWebhook(url=biome_webhook_url)
+                    webhook.add_embed(get_end_biome_embed())
                     webhook.add_embed(get_start_biome_embed())
                     response = webhook.execute()
                     break
 
-                elif biome == current_biome and current_biome != "NORMAL":
+                elif biome != current_biome and current_biome == "NORMAL":  #checks if the biome changed to normal which means it ended normally
                     last_biome = current_biome
                     current_biome = biome
                     print(f"{current_biome} biome has ended.")
@@ -162,12 +164,11 @@ with open(latest_log_file, 'r', encoding='utf-8', errors='ignore') as file:
                     response = webhook.execute()
                     break
 
-                elif current_biome != biome and biome != "NORMAL":
+                elif current_biome != biome and biome != "NORMAL" and current_biome != "NORMAL":  #this checks if the biome is new from normal biome which means it does not need an end biome embed
                     last_biome = current_biome
                     current_biome = biome
-                    print(f"{last_biome} biome has ended.")
+                    print(f"[BIOME DETECTED]:Biome is now {current_biome}!")
                     webhook = discord_webhook.DiscordWebhook(url=biome_webhook_url)
-                    webhook.add_embed(get_end_biome_embed())
                     webhook.add_embed(get_start_biome_embed())
                     response = webhook.execute()
 
