@@ -43,14 +43,14 @@
         "GRAVEYARD": true,
         "BLOOD RAIN": true
     },
-
     
-
-
-    "settings": {
+    "search_stuff":{
         "search_word": "equipped",
         "before_aura": "\"Equipped \\\"",
-        "after_aura": "\\\"\",\"smallImage",
+        "after_aura": "\\\"\",\"smallImage"   
+    },
+
+    "settings": {
         "server_link": "server url",
         "biome_webhook_url": "webhook link",
         "aura_webhook_url": "webhook link",
@@ -58,6 +58,9 @@
         "biome_check": true,
         "auto_strange_contoller": true,
         "auto_biome_randomizer": true,
-        "player_username": "GOGOPO365"
+        "player_username": "GOGOPO365",
+        "anti_afk": true,
+        "anti_afk_amount": 300,
+        "anti_afk_action_type": 1
     }
 }

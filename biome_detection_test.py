@@ -33,9 +33,10 @@ biome_randomizer_time = 0
 strange_controller_time = 0
 
 """Variables from JSON"""
-search_word = settings["search_word"]       #sets all my variables from json
-before_aura = settings["before_aura"]
-after_aura = settings["after_aura"]
+search_stuff = config["search_stuff"]
+search_word = search_stuff["search_word"]       #sets all my variables from json
+before_aura = search_stuff["before_aura"]
+after_aura = search_stuff["after_aura"]
 server_link = settings["server_link"]
 biome_webhook_url = settings["biome_webhook_url"]
 aura_webhook_url = settings["aura_webhook_url"]
@@ -44,7 +45,11 @@ biome_check = settings["biome_check"]
 auto_strange_controller = settings["auto_strange_contoller"]
 auto_biome_randomizer = settings["auto_biome_randomizer"]
 player_username = settings["player_username"]
+anti_afk = settings["anti_afk"]
+anti_afk_amount = settings["anti_afk_amount"]
+anti_afk_action_type = settings["anti_afk_action_type"]
 unix_timestamp = int(time.time())
+anti_afk_time = int(time.time()) + anti_afk_amount
 
 """Coordinates"""
 INVENTORY_OPEN_COORD = (34, 508) # Open inventory button x and y coords
@@ -132,6 +137,34 @@ def use_device(k: int):
     keyboard.write("1")
     click_at(INVENTORY_USE_COORD)
 
+def anti_afk_action():
+    if anti_afk_action_type == 1:
+        pyautogui.keyDown('space')
+        time.sleep(0.2)
+        pyautogui.keyUp('space')
+    elif anti_afk_action_type == 2:
+        pyautogui.keyDown('w')
+        time.sleep(0.1)
+        pyautogui.keyUp('w')    
+        time.sleep(0.1)
+        pyautogui.keyDown('s')
+        time.sleep(0.1)
+        pyautogui.keyUp('s')
+        time.sleep(0.1)
+    elif anti_afk_action_type == 3:
+        pyautogui.keyDown('o')
+        time.sleep(0.1)
+        pyautogui.keyUp('o')
+        time.sleep(0.1)
+        pyautogui.keyDown('i')
+        time.sleep(0.1)
+        pyautogui.keyUp('i')
+        time.sleep(0.1)
+    anti_afk_time = int(time.time()) + anti_afk_amount
+            
+
+
+
 
 
 
@@ -206,21 +239,30 @@ with open(latest_log_file, 'r', encoding='utf-8', errors='ignore') as file:
                             break
                         else: continue
 
+
+        if anti_afk == True and anti_afk_time < int(time.time()):     #putting anti afk here
+           anti_afk_action()
+
+
+        
+
         if(
 
             auto_strange_controller == True                         #checks if: strange controller option is on
-            and current_biome is not None                           #           the current biome isnt none, this stops wanted biomes getting skipped
+            and current_biome is not None                           #           the current biome isnt none, this stops no skip biomes getting skipped
             and strange_controller_time < int(time.time())          #           strange controller timer is up
-            and not DO_NOT_SKIP_BIOMES.get(current_biome, False) ): #           makes sure you arent in a biome you want to keep
+            and not DO_NOT_SKIP_BIOMES.get(current_biome, False) ): #           makes sure you arent in a no skip biome
             use_device(0)
+            strange_controller_time + 10                           # this makes it not check over and over if its in a no skip biome
 
         elif(
             
-            auto_biome_randomizer == True 
+            auto_biome_randomizer == True                           #exact same as above but for biome randomizer
             and current_biome is not None
             and biome_randomizer_time < int(time.time()) 
             and not DO_NOT_SKIP_BIOMES.get(current_biome, False) ):
             use_device(1)
+            biome_randomizer_time + 10
 
 
 
