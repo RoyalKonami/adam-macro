@@ -37,5 +37,7 @@ auto_biome_randomizer = True
 player_username = "GOGOPO365"
 
 
-json_data = json.dumps(BIOMES)
+json_data = json.dumps(BIOMES,
+                       indent=4)
+ 
 print(json_data)

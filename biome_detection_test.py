@@ -14,44 +14,28 @@ import re
 from PIL import Image
 
 
-BIOMES = ["NORMAL", "WINDY", "SNOWY", "RAINY", "SANDSTORM", "HELL", "STARFALL", "HEAVEN", "LOST FOREST", "CORRUPTION", "NULL", "GLITCHED", "DREAMSPACE", "CYBERSPACE", "SINGULARITY", "THE RADIANT FOREST", "PUMPKIN MOON", "GRAVEYARD", "BLOOD RAIN"]
-BIOME_COLORS = {
-    "NORMAL": 0x00d62b,
-    "WINDY": 0x00cefc,
-    "SNOWY": 0x99e9ff,
-    "RAINY": 0x0049d1,
-    "SANDSTORM": 0xa18f50,
-    "HELL": 0xc90000,
-    "STARFALL": 0x6500d9,
-    "HEAVEN": 0xfff947,
-    "LOST FOREST": 0x056903,
-    "CORRUPTION": 0x580775,
-    "NULL": 0x696969,
-    "GLITCHED": 0xb4eb00,
-    "DREAMSPACE": 0xff4fdf,
-    "CYBERSPACE": 0x002a6e,
-    "SINGULARITY": 0x631010,
-    "THE RADIANT FOREST": 0x400485,
-    "PUMPKIN MOON": 0xed5700,
-    "GRAVEYARD": 0x383838,
-    "BLOOD RAIN": 0x820d0d,
-}
+with open(os.path.join(os.path.dirname(__file__), "config.json"), encoding="utf-8") as config_file:
+    config = json.load(config_file)    #selects the config file to load the stuff from
+
+BIOME_COLORS = config["biome_colors"]
+BIOMES = list(BIOME_COLORS)
+settings = config["settings"]         #puts the lists under the names settings
 
 current_biome = None
 last_biome = None
 equipped_aura = None
 last_aura_string = None
-search_word = ("equipped")
-before_aura = ('"Equipped \"')
-after_aura = ('\"","smallImage')
-server_link = ("https://www.roblox.com/share?code=5c16c5596ed6714db52e089c8bb7ae17&type=Server")
-biome_webhook_url = "https://discord.com/api/webhooks/1567999438780104824/vz1Y7Hyu9RJpS_-cvs8nPy4EKyszOX64HSA5sAYM0SaPpdYtMvczZPUXTN63_tMHFUot"
-aura_webhook_url = "https://discord.com/api/webhooks/1568255027481542736/yDv9zBzz4bYOC-k2ETVq3pj2nJBWCEVdRvexx55ArnFvT4dBtOZJGoaORHx58aCcx8c6"
-aura_check = True
-biome_check = True
-auto_strange_contoller = True
-auto_biome_randomizer = True
-player_username = "GOGOPO365"
+search_word = settings["search_word"]       #sets all my variables from json
+before_aura = settings["before_aura"]
+after_aura = settings["after_aura"]
+server_link = settings["server_link"]
+biome_webhook_url = settings["biome_webhook_url"]
+aura_webhook_url = settings["aura_webhook_url"]
+aura_check = settings["aura_check"]
+biome_check = settings["biome_check"]
+auto_strange_contoller = settings["auto_strange_contoller"]
+auto_biome_randomizer = settings["auto_biome_randomizer"]
+player_username = settings["player_username"]
 unix_timestamp = int(time.time())
 
 
@@ -113,7 +97,7 @@ with open(latest_log_file, 'r', encoding='utf-8', errors='ignore') as file:
     file.seek(0, os.SEEK_END)
     
     while True:
-        line = file.readline()
+        line = file.readline() 
         
         #rest if no new lines
         if not line:
@@ -144,7 +128,7 @@ with open(latest_log_file, 'r', encoding='utf-8', errors='ignore') as file:
         #compare for biomes
         for biome in BIOMES:
             if biome in clean_line.upper():
-                if biome != "NORMAL" and current_biome != biome:    #checks if biome is not the last registered biome and is not normal, this is for br and sc changes during biome
+                if biome != "NORMAL" and current_biome != biome :    #checks if biome is not the last registered biome and is not normal, this is for br and sc changes during biome
                     last_biome = current_biome
                     current_biome = biome
                     print(f"{last_biome} biome has ended.")
@@ -174,7 +158,6 @@ with open(latest_log_file, 'r', encoding='utf-8', errors='ignore') as file:
 
                     break
                 else: continue
-
 
 
 
