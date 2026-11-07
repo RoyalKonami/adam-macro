@@ -52,8 +52,9 @@ def get_start_biome_embed():
     unix_timestamp = int(time.time())
     return discord_webhook.DiscordEmbed(
         title=f"{current_biome} has started,",
-        description=f"{current_biome} biome has started <t:{unix_timestamp}:R>.\nServer Link: {server_link}",
-        color=BIOME_COLORS.get(current_biome, 0x808080)
+        description=f"{current_biome} biome has started <t:{unix_timestamp}:R>.",
+        color=BIOME_COLORS.get(current_biome, 0x808080),
+        url=biome_webhook_url
         )
 
 #embed for biome end
