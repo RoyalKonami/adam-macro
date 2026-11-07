@@ -22,18 +22,42 @@
         "BLOOD RAIN": 8523021
     },
 
+    "do_not_skip_biomes": {
+        "NORMAL": false,
+        "WINDY": false,
+        "SNOWY": false,
+        "RAINY": false,
+        "SANDSTORM": false,
+        "HELL": true,
+        "STARFALL": false,
+        "HEAVEN": false,
+        "LOST FOREST": false,
+        "CORRUPTION": true,
+        "NULL": false,
+        "GLITCHED": true,
+        "DREAMSPACE": true,
+        "CYBERSPACE": true,
+        "SINGULARITY": true,
+        "THE RADIANT FOREST": true,
+        "PUMPKIN MOON": true,
+        "GRAVEYARD": true,
+        "BLOOD RAIN": true
+    },
+
+    
+
 
     "settings": {
         "search_word": "equipped",
         "before_aura": "\"Equipped \\\"",
         "after_aura": "\\\"\",\"smallImage",
         "server_link": "server url",
-        "biome_webhook_url": "webhook url",
-        "aura_webhook_url": "webhook url",
+        "biome_webhook_url": "webhook link",
+        "aura_webhook_url": "webhook link",
         "aura_check": true,
         "biome_check": true,
         "auto_strange_contoller": true,
         "auto_biome_randomizer": true,
-        "player_username": "username"
+        "player_username": "GOGOPO365"
     }
 }

@@ -22,14 +22,15 @@ with open(os.path.join(os.path.dirname(__file__), "config.json"), encoding="utf-
 
 BIOME_COLORS = config["biome_colors"]
 BIOMES = list(BIOME_COLORS)
+DO_NOT_SKIP_BIOMES = config["do_not_skip_biomes"]
 settings = config["settings"]         #puts the lists under the names settings
 
 current_biome = None
 last_biome = None
 equipped_aura = None
 last_aura_string = None
-biome_randomizer_time = None
-strange_controller_time = None
+biome_randomizer_time = 0
+strange_controller_time = 0
 search_word = settings["search_word"]       #sets all my variables from json
 before_aura = settings["before_aura"]
 after_aura = settings["after_aura"]
@@ -107,30 +108,38 @@ def double_click_at(x, y):
 
 def use_biome_randomizer():
     print("br used")
-    click_at(34, 508)        #open inventory
-    click_at(819, 367) #search bar
-    keyboard.write('biome ')    #types biome randomizer into search
+    click_at(34, 508)                           #open inventory
+    click_at(819, 367)                          #search bar
+    keyboard.write('biome ')                    #types biome randomizer into search
     keyboard.write('randomizer')
-    click_at(851, 470) #click biome randomizer
+    click_at(851, 470)                          #click biome randomizer
     double_click_at(574, 580)
-    keyboard.write('1')     #selects the number and makes sure it is 1
-    click_at(686, 576) #use item
+    keyboard.write('1')                         #selects the number and makes sure it is 1
+    click_at(686, 576)                          #use item
+    click_at(1524, 233)                         #close inventory
 
 def use_strange_controller():
     print("sc used")
-    click_at(34, 508)        #open inventory
-    click_at(819, 367) #search bar
-    keyboard.write('strange ')    #types strange controller into search
+    click_at(34, 508)                           #read above comments
+    click_at(819, 367) 
+    keyboard.write('strange ')    
     keyboard.write('controller')
-    click_at(851, 470) #click strange controller
+    click_at(851, 470) 
     double_click_at(574, 580)
-    keyboard.write('1')     #selects the number and makes sure it is 1
-    click_at(686, 576) #use item
+    keyboard.write('1')     
+    click_at(686, 576) 
+    click_at(1524, 233)
 
-def set_timers():
+
+def set_strange_contrller_timer():
     global strange_controller_time
     strange_controller_time = int(time.time())  + 20 * 6 + 30   #sets strange controller time to 20m 30s in the future
+
+def set_biome_randomizer_time():
+    global biome_randomizer_time
     biome_randomizer_time = int(time.time()) +  35 * 6 + 30     #same with biome randomizer
+
+    
 
      
 
@@ -184,7 +193,6 @@ with open(latest_log_file, 'r', encoding='utf-8', errors='ignore') as file:
 
 
 
-
         
         #compare for biomes
         if biome_check == True:
@@ -218,6 +226,18 @@ with open(latest_log_file, 'r', encoding='utf-8', errors='ignore') as file:
                     else: continue
 
 
+
+
+
+        if(
+
+            auto_strange_contoller == True 
+            and current_biome is not None
+            and strange_controller_time < int(time.time()) 
+            and not DO_NOT_SKIP_BIOMES.get(current_biome, False) ): #edo tell me if this is ok, i seperated them to make it more readable
+
+            use_strange_controller()
+            set_strange_contrller_timer()
 
 
 
