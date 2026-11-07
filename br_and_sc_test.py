@@ -18,6 +18,8 @@ def click_at(x, y):
 
 
 
+
+
 time.sleep(2) #swap application time
 
 
