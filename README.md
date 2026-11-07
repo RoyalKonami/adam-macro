@@ -1,10 +1,10 @@
 making a macro
 added: 
 biome and aura detection, 
-auto br and sc with a list of biomes not to use it
+auto br and sc with a list of biomes not to use it, 
+anti afk
 
 want to add: 
-anti afk, 
 menu with buttons, 
 ocr for merchants, 
 fishing
