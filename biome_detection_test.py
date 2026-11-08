@@ -78,8 +78,8 @@ def get_start_biome_embed():
         url=biome_webhook_url,
         footer="Adams Macro Nuke"
         )
+    image_name = f"{current_biome.replace(' ', '')}.png"
     embed.set_image(url=f"attachment://{image_name}")
-    embed.set_footer(text="Adams Macro Nuke")
     return embed
 
 #embed for biome end
@@ -196,8 +196,10 @@ def change_macro_state():
     global macro_state   
     if macro_state == 1:
         macro_state = 0
+        print("macro stopped")
     else:
         macro_state = 1
+        print("macro started")
 
 
 
