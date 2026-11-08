@@ -25,12 +25,14 @@ BIOMES = list(BIOME_COLORS)
 DO_NOT_SKIP_BIOMES = config["do_not_skip_biomes"]
 settings = config["settings"]         #puts the lists under the names settings
 
-current_biome = "NORMAL"
+current_biome = "START"
 last_biome = None
 equipped_aura = None
 last_aura_string = None
 biome_randomizer_time = 0
 strange_controller_time = 0
+macro_state = 0
+is_macro_open = 1       #this will detect if the menu is open, if it is closed it will terminate the macro
 
 """Variables from JSON"""
 search_stuff = config["search_stuff"]
@@ -57,6 +59,7 @@ INVENTORY_SEARCHBAR_COORD = (819, 367) # Search bar x and y coords
 INVENTORY_FIRST_SLOT_COORD = (851, 470) #Device position in inventory x and y coords
 INVENTORY_AMOUNT_COORD = (574, 580) # Amount textbox x and y coords
 INVENTORY_USE_COORD = (686, 576) # Use button x and y coords
+INVENTORY_CLOSE_COORD = (1524, 233)
 
 
 
@@ -117,13 +120,17 @@ def click_at(x, y):
 def double_click_at(x, y):
     pydirectinput.moveTo(x-1, y)
     pydirectinput.moveRel(1, 0)                     #same as above
-    pydirectinput.doubleClick()
+    pydirectinput.click()
+    time.sleep(0.1)
+    pydirectinput.click()
     time.sleep(0.1)                                 #same as above
 
 def use_device(k: int):
+    global strange_controller_time
+    global biome_randomizer_time
     """If k is 0, then uses SC. If k is 1, then uses BR."""
-    click_at(INVENTORY_OPEN_COORD)
-    click_at(INVENTORY_SEARCHBAR_COORD)
+    click_at(*INVENTORY_OPEN_COORD)
+    click_at(*INVENTORY_SEARCHBAR_COORD)
     if k == 0:
         keyboard.write("strange ")
         keyboard.write("controller")
@@ -132,10 +139,11 @@ def use_device(k: int):
         keyboard.write("biome ")
         keyboard.write("randomizer")
         biome_randomizer_time = int(time.time()) + 2130     #sets biome randomiser time to 35m 30s in the future
-    click_at(INVENTORY_FIRST_SLOT_COORD)
-    double_click_at(INVENTORY_AMOUNT_COORD)
+    click_at(*INVENTORY_FIRST_SLOT_COORD)
+    double_click_at(*INVENTORY_AMOUNT_COORD)
     keyboard.write("1")
-    click_at(INVENTORY_USE_COORD)
+    click_at(*INVENTORY_USE_COORD)
+    click_at(*INVENTORY_CLOSE_COORD)
 
 def anti_afk_action():
     if anti_afk_action_type == 1:
@@ -161,6 +169,18 @@ def anti_afk_action():
         pyautogui.keyUp('i')
         time.sleep(0.1)
     anti_afk_time = int(time.time()) + anti_afk_amount
+    time.sleep(0.5)
+
+def change_macro_state():
+    global macro_state   
+    if macro_state == 1:
+        macro_state = 0
+    else:
+        macro_state = 1
+
+
+
+keyboard.add_hotkey("j", change_macro_state)
             
 
 
@@ -177,92 +197,112 @@ print(latest_log_file)
 
 with open(latest_log_file, 'r', encoding='utf-8', errors='ignore') as file:
     file.seek(0, os.SEEK_END) #goes to end of file
-    print("waiting for stuff to happen...")
-    
-    while True:
-        line = file.readline() 
+    print("Time to swap...")
+    while is_macro_open == 1:
+        if macro_state == 0:
+            time.sleep(0.2)  #makes it so that if is_macro_open == 1 and macro_state == 0 the loop doesnt run every tick
         
-        #rest if no new lines
-        if not line:
-            time.sleep(0.1)
-            continue
-        
-        #remove hidden formatting
-        clean_line = line.strip()
-
-        #check for equipped auras
-        if aura_check == True:
-            match = re.search(r'Equipped \\"([^"]+)\\"', clean_line)
-            if match and match.group(0) != last_aura_string:
-                extracted_aura = match.group(1) #get text string
+        while True and macro_state == 1:
+            line = file.readline() 
             
-                # compare the strings
-                print(f"[AURA DETECTED]: {extracted_aura}")
-                webhook = discord_webhook.DiscordWebhook(url=aura_webhook_url)
-                webhook.add_embed(get_aura_embed())
-                response = webhook.execute()
-                equipped_aura = extracted_aura #saves text
-                last_aura_string = match.group(0) #saves full match string
-
-
-
-
-        
-        #compare for biomes
-        if biome_check == True:
-            for biome in BIOMES:
-                if biome in clean_line.upper():
-                    if current_biome != biome:
-                        if biome != "NORMAL":    #checks if biome is not the last registered biome and is not normal, this is for br and sc changes during biome
-                            biome_change(biome)
-                            print(f"{last_biome} biome has ended.")
-                            print(f"[BIOME DETECTED]:Biome is now {current_biome}!")
-                            webhook = discord_webhook.DiscordWebhook(url=biome_webhook_url)
-                            webhook.add_embed(get_end_biome_embed())
-                            webhook.add_embed(get_start_biome_embed())
-                            response = webhook.execute()
-                            break
-
-                        elif current_biome == "NORMAL":  #checks if the biome changed to normal which means it ended normally
-                            biome_change(biome)
-                            print(f"{current_biome} biome has ended.")
-                            webhook = discord_webhook.DiscordWebhook(url=biome_webhook_url)
-                            webhook.add_embed(get_end_biome_embed())
-                            response = webhook.execute()
-                            break
-                        elif biome != "NORMAL" and current_biome != "NORMAL":  #this checks if the biome is new from normal biome which means it does not need an end biome embed
-                            biome_change(biome)
-                            print(f"[BIOME DETECTED]:Biome is now {current_biome}!")
-                            webhook = discord_webhook.DiscordWebhook(url=biome_webhook_url)
-                            webhook.add_embed(get_start_biome_embed())
-                            response = webhook.execute()
-                            break
-                        else: continue
-
-
-        if anti_afk == True and anti_afk_time < int(time.time()):     #putting anti afk here
-           anti_afk_action()
-
-
-        
-
-        if(
-
-            auto_strange_controller == True                         #checks if: strange controller option is on
-            and current_biome is not None                           #           the current biome isnt none, this stops no skip biomes getting skipped
-            and strange_controller_time < int(time.time())          #           strange controller timer is up
-            and not DO_NOT_SKIP_BIOMES.get(current_biome, False) ): #           makes sure you arent in a no skip biome
-            use_device(0)
-            strange_controller_time + 10                           # this makes it not check over and over if its in a no skip biome
-
-        elif(
+            #rest if no new lines
+            if not line:
+                time.sleep(0.1)
+                continue
             
-            auto_biome_randomizer == True                           #exact same as above but for biome randomizer
-            and current_biome is not None
-            and biome_randomizer_time < int(time.time()) 
-            and not DO_NOT_SKIP_BIOMES.get(current_biome, False) ):
-            use_device(1)
-            biome_randomizer_time + 10
+            #remove hidden formatting
+            clean_line = line.strip()
+
+            #check for equipped auras
+            if aura_check == True:
+                match = re.search(r'Equipped \\"([^"]+)\\"', clean_line)
+                if match and match.group(0) != last_aura_string:
+                    extracted_aura = match.group(1) #get text string
+                
+                    # compare the strings
+                    print(f"[AURA DETECTED]: {extracted_aura}")
+                    webhook = discord_webhook.DiscordWebhook(url=aura_webhook_url)
+                    webhook.add_embed(get_aura_embed())
+                    response = webhook.execute()
+                    equipped_aura = extracted_aura #saves text
+                    last_aura_string = match.group(0) #saves full match string
+
+
+
+
+            
+            #compare for biomes
+            if biome_check == True:
+                for biome in BIOMES:
+                    if biome in clean_line.upper():
+                        if current_biome != biome:
+                            if biome != current_biome and last_biome != "NORMAL" and last_biome != "START":    #checks if biome is not the last registered biome and is not normal, this is for br and sc changes during biome
+                                biome_change(biome)
+                                print(f"{last_biome} biome has ended.")
+                                print(f"[BIOME DETECTED]:Biome is now {current_biome}!")
+                                webhook = discord_webhook.DiscordWebhook(url=biome_webhook_url)
+                                webhook.add_embed(get_end_biome_embed())
+                                webhook.add_embed(get_start_biome_embed())
+                                response = webhook.execute()
+                                break
+
+                            elif current_biome != "NORMAL" and current_biome == "NORMAL":  #checks if the biome changed to normal which means it ended normally
+                                biome_change(biome)
+                                print(f"{current_biome} biome has ended.")
+                                webhook = discord_webhook.DiscordWebhook(url=biome_webhook_url)
+                                webhook.add_embed(get_end_biome_embed())
+                                response = webhook.execute()
+                                break
+                            elif biome != "NORMAL" and current_biome != "NORMAL":  #this checks if the biome is new from normal biome which means it does not need an end biome embed
+                                biome_change(biome)
+                                print(f"[BIOME DETECTED]:Biome is now {current_biome}!")
+                                webhook = discord_webhook.DiscordWebhook(url=biome_webhook_url)
+                                webhook.add_embed(get_start_biome_embed())
+                                response = webhook.execute()
+                                break
+                            else: continue
+
+
+            if anti_afk == True and anti_afk_time < int(time.time()):     #putting anti afk here
+                anti_afk_action()
+
+
+            
+
+            if(
+
+                auto_strange_controller == True                         #checks if: strange controller option is on
+                and current_biome is not None                           #           the current biome isnt none, this stops no skip biomes getting skipped
+                and strange_controller_time < int(time.time())          #           strange controller timer is up
+                and not DO_NOT_SKIP_BIOMES.get(current_biome, False) ): #           makes sure you arent in a no skip biome
+                use_device(0)
+            elif(
+                
+                auto_biome_randomizer == True                           #exact same as above but for biome randomizer
+                and current_biome is not None
+                and biome_randomizer_time < int(time.time()) 
+                and not DO_NOT_SKIP_BIOMES.get(current_biome, False) ):
+                use_device(1)
+
+            elif(
+                auto_strange_controller == True                         
+                and current_biome is not None                           
+                and strange_controller_time < int(time.time())         
+                and DO_NOT_SKIP_BIOMES.get(current_biome, True) ):     #if the timer is up but you are in a no skip biome it sets it to 10 seconds in the future
+                strange_controller_time = int(time.time()) + 10
+
+            elif(
+                auto_biome_randomizer == True                         
+                and current_biome is not None                           
+                and biome_randomizer_time < int(time.time())         
+                and DO_NOT_SKIP_BIOMES.get(current_biome, True) ):      #same as above but for biome randomizer       
+                biome_randomizer_time = int(time.time()) + 10
+                
+
+
+            
+                
+    else: exit  #kills terminal if the menu is closed
 
 
 
