@@ -24,8 +24,6 @@ BIOME_COLORS = config["biome_colors"]
 BIOMES = list(BIOME_COLORS)
 DO_NOT_SKIP_BIOMES = config["do_not_skip_biomes"]
 settings = config["settings"]         #puts the lists under the names settings
-image_name = f"{current_biome}.png"
-image_path = os.path.join(os.path.dirname(__file__), "images", image_name)
 
 current_biome = "START"
 last_biome = None
@@ -63,6 +61,8 @@ INVENTORY_AMOUNT_COORD = (574, 580) # Amount textbox x and y coords
 INVENTORY_USE_COORD = (686, 576) # Use button x and y coords
 INVENTORY_CLOSE_COORD = (1524, 233)
 
+image_name = f"{current_biome}.png"
+image_path = os.path.join(os.path.dirname(__file__), "images", image_name)
 
 
 """Defining functions"""
@@ -74,8 +74,8 @@ def get_start_biome_embed():
         title=f"{current_biome} has started,",
         description=f"{current_biome} biome has started <t:{unix_timestamp}:R>.",
         color=BIOME_COLORS.get(current_biome, 0x808080),
-        url=biome_webhook_url
-        footer={text= "Adams Macro Nuke"}
+        url=biome_webhook_url,
+        footer="Adams Macro Nuke"
         )
     embed.set_image(url=f"attachment://{image_name}")
     embed.set_footer(text="Adams Macro Nuke")
