@@ -1,6 +1,7 @@
 import customtkinter
 
 macro_state = 0
+menu_open = 1
 
 def start_macro():
     macro_state = 1
