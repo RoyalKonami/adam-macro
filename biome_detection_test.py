@@ -60,6 +60,7 @@ INVENTORY_FIRST_SLOT_COORD = (851, 470) #Device position in inventory x and y co
 INVENTORY_AMOUNT_COORD = (574, 580) # Amount textbox x and y coords
 INVENTORY_USE_COORD = (686, 576) # Use button x and y coords
 INVENTORY_CLOSE_COORD = (1524, 233)
+INVENTORY_ITEMS_TAB_COORD = (1270, 335)
 
 image_name = f"{current_biome}.png"
 image_path = os.path.join(os.path.dirname(__file__), "images", image_name)
@@ -90,7 +91,7 @@ def get_end_biome_embed():
         color=BIOME_COLORS.get(last_biome, 0x808080)
         )
 
-#embed for aura equip
+#embed for aura 1
 def get_aura_embed():
     return discord_webhook.DiscordEmbed(
         title=f"{extracted_aura} has been equipped",
@@ -144,20 +145,26 @@ def use_device(k: int):
     global biome_randomizer_time
     """If k is 0, then uses SC. If k is 1, then uses BR."""
     click_at(*INVENTORY_OPEN_COORD)
+    click_at(*INVENTORY_ITEMS_TAB_COORD)
     click_at(*INVENTORY_SEARCHBAR_COORD)
     if k == 0:
         keyboard.write("strange ")
+        time.sleep(0.1)
         keyboard.write("controller")
         strange_controller_time = int(time.time())  + 1230  #sets strange controller time to 20m 30s in the future
     elif k == 1:
         keyboard.write("biome ")
+        time.sleep(0.1)
         keyboard.write("randomizer")
         biome_randomizer_time = int(time.time()) + 2130     #sets biome randomiser time to 35m 30s in the future
     click_at(*INVENTORY_FIRST_SLOT_COORD)
     double_click_at(*INVENTORY_AMOUNT_COORD)
+    time.sleep(0.1)
     keyboard.write("1")
     click_at(*INVENTORY_USE_COORD)
+    time.sleep(0.1)
     click_at(*INVENTORY_CLOSE_COORD)
+    time.sleep(0.1)
 
 def anti_afk_action():
     if anti_afk_action_type == 1:
