@@ -25,6 +25,13 @@ BIOMES = list(BIOME_COLORS)
 DO_NOT_SKIP_BIOMES = config["do_not_skip_biomes"]
 settings = config["settings"]         #puts the lists under the names settings
 
+with open(os.path.join(os.path.dirname(__file__), "webhooks.json"), encoding="utf-8") as f:
+    webhooks = json.load(f)
+
+biome_webhook_url = webhooks["biome_webhook_url"]           #this loads webhook urls and server link from webhooks.json
+aura_webhook_url = webhooks["aura_webhook_url"]
+server_link = webhooks["server_link"]
+
 current_biome = "START"
 last_biome = None
 equipped_aura = None
@@ -39,9 +46,6 @@ search_stuff = config["search_stuff"]
 search_word = search_stuff["search_word"]       #sets all my variables from json
 before_aura = search_stuff["before_aura"]
 after_aura = search_stuff["after_aura"]
-server_link = settings["server_link"]
-biome_webhook_url = settings["biome_webhook_url"]
-aura_webhook_url = settings["aura_webhook_url"]
 aura_check = settings["aura_check"]
 biome_check = settings["biome_check"]
 auto_strange_controller = settings["auto_strange_contoller"]
@@ -62,24 +66,19 @@ INVENTORY_USE_COORD = (686, 576) # Use button x and y coords
 INVENTORY_CLOSE_COORD = (1524, 233)
 INVENTORY_ITEMS_TAB_COORD = (1270, 335)
 
-image_name = f"{current_biome}.png"
-image_path = os.path.join(os.path.dirname(__file__), "images", image_name)
-
-
 """Defining functions"""
 
 #embed for biome start
 def get_start_biome_embed():
     unix_timestamp = int(time.time())
-    return discord_webhook.DiscordEmbed(
+    thumbnail_name = f"{current_biome.replace(' ', '')}.png"
+    embed = discord_webhook.DiscordEmbed(
         title=f"{current_biome} has started,",
-        description=f"{current_biome} biome has started <t:{unix_timestamp}:R>.",
+        description=f"{current_biome} biome has started <t:{unix_timestamp}:R>.\n{server_link}",
         color=BIOME_COLORS.get(current_biome, 0x808080),
-        url=biome_webhook_url,
-        footer="Adams Macro Nuke"
-        )
-    image_name = f"{current_biome.replace(' ', '')}.png"
-    embed.set_image(url=f"attachment://{image_name}")
+    )
+    embed.set_thumbnail(url=f"attachment://{thumbnail_name}")
+    embed.set_footer(text="Adams Macro Nuke")
     return embed
 
 #embed for biome end
@@ -99,14 +98,14 @@ def get_aura_embed():
         color=0x00d62b
         )
 
-def attach_biome_image(webhook):
-    image_name = f"{current_biome}.png"
-    image_path = os.path.join(
-        os.path.dirname(__file__), "images", image_name
+def attach_biome_thumbnail(webhook):
+    thumbnail_name = f"{current_biome.replace(' ', '')}.png"
+    thumbnail_path = os.path.join(
+        os.path.dirname(__file__), "images", thumbnail_name
     )
 
-    with open(image_path, "rb") as image_file:
-        webhook.add_file(file=image_file.read(), filename=image_name)
+    with open(thumbnail_path, "rb") as thumbnail_file:
+        webhook.add_file(file=thumbnail_file.read(), filename=thumbnail_name)
 
 
 def get_current_log_file():
@@ -266,7 +265,7 @@ with open(latest_log_file, 'r', encoding='utf-8', errors='ignore') as file:
                                 webhook = discord_webhook.DiscordWebhook(url=biome_webhook_url)
                                 webhook.add_embed(get_end_biome_embed())
                                 webhook.add_embed(get_start_biome_embed())
-                                attach_biome_image(webhook)
+                                attach_biome_thumbnail(webhook)
                                 response = webhook.execute()
                                 break
 
@@ -275,7 +274,6 @@ with open(latest_log_file, 'r', encoding='utf-8', errors='ignore') as file:
                                 print(f"{current_biome} biome has ended.")
                                 webhook = discord_webhook.DiscordWebhook(url=biome_webhook_url)
                                 webhook.add_embed(get_end_biome_embed())
-                                attach_biome_image(webhook)
                                 response = webhook.execute()
                                 break
                             elif biome != "NORMAL" and current_biome != "NORMAL":  #this checks if the biome is new from normal biome which means it does not need an end biome embed
@@ -283,7 +281,7 @@ with open(latest_log_file, 'r', encoding='utf-8', errors='ignore') as file:
                                 print(f"[BIOME DETECTED]:Biome is now {current_biome}!")
                                 webhook = discord_webhook.DiscordWebhook(url=biome_webhook_url)
                                 webhook.add_embed(get_start_biome_embed())
-                                attach_biome_image(webhook)
+                                attach_biome_thumbnail(webhook)
                                 response = webhook.execute()
                                 break
                             else: continue
@@ -329,7 +327,6 @@ with open(latest_log_file, 'r', encoding='utf-8', errors='ignore') as file:
             
                 
     else: exit  #kills terminal if the menu is closed
-
 
 
 
