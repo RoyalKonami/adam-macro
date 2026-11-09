@@ -1,4 +1,4 @@
-import os               #importhing stuff i might want
+import os               #importing stuff i might want
 import time
 import json
 import webbrowser
@@ -39,12 +39,12 @@ last_aura_string = None
 biome_randomizer_time = 0
 strange_controller_time = 0
 macro_state = 0
-is_macro_open = 1       #this will detect if the menu is open, if it is closed it will terminate the macro
+is_macro_open = 1       #this will detect if the menu is open, if it is closed (if 0) it will terminate the macro
+                        #edo i think if this turns to 0 we terminate the process -a
 
 """Variables from JSON"""
 search_stuff = config["search_stuff"]
-search_word = search_stuff["search_word"]       #sets all my variables from json
-before_aura = search_stuff["before_aura"]
+search_word = search_stuff["search_word"]       #sets all variables from JSON
 after_aura = search_stuff["after_aura"]
 aura_check = settings["aura_check"]
 biome_check = settings["biome_check"]
@@ -58,13 +58,14 @@ unix_timestamp = int(time.time())
 anti_afk_time = int(time.time()) + anti_afk_amount
 
 """Coordinates"""
-INVENTORY_OPEN_COORD = (34, 508) # Open inventory button x and y coords
-INVENTORY_SEARCHBAR_COORD = (819, 367) # Search bar x and y coords
-INVENTORY_FIRST_SLOT_COORD = (851, 470) #Device position in inventory x and y coords
-INVENTORY_AMOUNT_COORD = (574, 580) # Amount textbox x and y coords
-INVENTORY_USE_COORD = (686, 576) # Use button x and y coords
-INVENTORY_CLOSE_COORD = (1524, 233)
-INVENTORY_ITEMS_TAB_COORD = (1270, 335)
+inventory_open_coord = (34, 508) # Open inventory button x and y coords
+inventory_searchbar_coord = (819, 367) # Search bar x and y coords
+inventory_first_slot_coord = (851, 470) #Device position in inventory x and y coords    
+inventory_amount_coord = (574, 580) # Amount textbox x and y coords
+inventory_use_coord = (686, 576) # Use button x and y coords                do these not have to be capital because they are lists? -a
+inventory_close_coord = (1524, 233) # Close button x and y coords
+
+
 
 """Defining functions"""
 
@@ -114,38 +115,36 @@ def get_current_log_file():
     log_files = glob.glob(search_pattern)                       #glob uses above search pattern to find current log
     if not log_files:
         raise FileNotFoundError("no log found")                 #if no log is found it raises a warning
-
-    latest_log = max(log_files, key=os.path.getmtime)   
+    latest_log = max(log_files, key=os.path.getmtime)
     return latest_log
 
 def biome_change(biome: str):
-            """Fixes the last_biome and current_biome variables upon the biome changing.""" #w edo
-            global last_biome, current_biome
-            last_biome = current_biome
-            current_biome = biome
-            return last_biome, current_biome
+    """Fixes the last_biome and current_biome variables upon the biome changing.""" #w edo
+    global last_biome, current_biome
+    last_biome = current_biome
+    current_biome = biome
+    return last_biome, current_biome
 
-def click_at(x, y):
+
+def click_at(x: int, y: int):
     pydirectinput.moveTo(x-1, y)
     pydirectinput.moveRel(1, 0)                     #moves 1 pixel so the game registers the cursor, it is accounted for with the x-1
     pydirectinput.click()
     time.sleep(0.1)                                 #waits 10ms to make
 
-def double_click_at(x, y):
+def double_click_at(x: int, y: int):
     pydirectinput.moveTo(x-1, y)
     pydirectinput.moveRel(1, 0)                     #same as above
-    pydirectinput.click()
-    time.sleep(0.1)
-    pydirectinput.click()
-    time.sleep(0.1)                                 #same as above
+    for n in range(2):
+        pydirectinput.click()
+        time.sleep(0.1)
 
 def use_device(k: int):
+    """If k is 0, then uses SC. If k is 1, then uses BR."""
     global strange_controller_time
     global biome_randomizer_time
-    """If k is 0, then uses SC. If k is 1, then uses BR."""
-    click_at(*INVENTORY_OPEN_COORD)
-    click_at(*INVENTORY_ITEMS_TAB_COORD)
-    click_at(*INVENTORY_SEARCHBAR_COORD)
+    click_at(*inventory_open_coord)
+    click_at(*inventory_searchbar_coord)
     if k == 0:
         keyboard.write("strange ")
         time.sleep(0.1)
@@ -155,39 +154,33 @@ def use_device(k: int):
         keyboard.write("biome ")
         time.sleep(0.1)
         keyboard.write("randomizer")
-        biome_randomizer_time = int(time.time()) + 2130     #sets biome randomiser time to 35m 30s in the future
-    click_at(*INVENTORY_FIRST_SLOT_COORD)
-    double_click_at(*INVENTORY_AMOUNT_COORD)
-    time.sleep(0.1)
+        biome_randomizer_time = int(time.time()) + 2130     #sets biome randomizer time to 35m 30s in the future
+    click_at(*inventory_first_slot_coord)
+    double_click_at(*inventory_amount_coord)
     keyboard.write("1")
-    click_at(*INVENTORY_USE_COORD)
-    time.sleep(0.1)
-    click_at(*INVENTORY_CLOSE_COORD)
-    time.sleep(0.1)
+    click_at(*inventory_use_coord)
+    click_at(*inventory_close_coord)
 
 def anti_afk_action():
+    """Type 1 is jump, Type 2 is move up and down, Type 3 is uhhhh???"""
     if anti_afk_action_type == 1:
         pyautogui.keyDown('space')
         time.sleep(0.2)
         pyautogui.keyUp('space')
     elif anti_afk_action_type == 2:
-        pyautogui.keyDown('w')
-        time.sleep(0.1)
-        pyautogui.keyUp('w')    
-        time.sleep(0.1)
-        pyautogui.keyDown('s')
-        time.sleep(0.1)
-        pyautogui.keyUp('s')
-        time.sleep(0.1)
+        keypresses = ['w', 's']
+        for k in keypresses:
+            pyautogui.keyDown(k)
+            time.sleep(0.1)
+            pyautogui.keyUp(k)
+            time.sleep(0.1)
     elif anti_afk_action_type == 3:
-        pyautogui.keyDown('o')
-        time.sleep(0.1)
-        pyautogui.keyUp('o')
-        time.sleep(0.1)
-        pyautogui.keyDown('i')
-        time.sleep(0.1)
-        pyautogui.keyUp('i')
-        time.sleep(0.1)
+        keypresses = ['o', 'i']
+        for k in keypresses:
+            pyautogui.keyDown(k)
+            time.sleep(0.1)
+            pyautogui.keyUp(k)
+            time.sleep(0.1)
     anti_afk_time = int(time.time()) + anti_afk_amount
     time.sleep(0.5)
 
@@ -203,11 +196,6 @@ def change_macro_state():
 
 
 keyboard.add_hotkey("j", change_macro_state)
-            
-
-
-
-
 
 
 screenWidth, screenHeight = pyautogui.size()
@@ -236,7 +224,7 @@ with open(latest_log_file, 'r', encoding='utf-8', errors='ignore') as file:
             clean_line = line.strip()
 
             #check for equipped auras
-            if aura_check == True:
+            if aura_check: # "if var == True" is the same as "if var" -e
                 match = re.search(r'Equipped \\"([^"]+)\\"', clean_line)
                 if match and match.group(0) != last_aura_string:
                     extracted_aura = match.group(1) #get text string
@@ -250,15 +238,13 @@ with open(latest_log_file, 'r', encoding='utf-8', errors='ignore') as file:
                     last_aura_string = match.group(0) #saves full match string
 
 
-
-
             
             #compare for biomes
-            if biome_check == True:
+            if biome_check: # "if var == true" is the same as "if var" -e
                 for biome in BIOMES:
-                    if biome in clean_line.upper():
+                    if biome in clean_line.upper(): # i have no idea how this works. -e     me neither -a
                         if current_biome != biome:
-                            if biome != current_biome and last_biome != "NORMAL" and last_biome != "START":    #checks if biome is not the last registered biome and is not normal, this is for br and sc changes during biome
+                            if last_biome != "NORMAL" and last_biome != "START":    #checks if biome is not the last registered biome and is not normal, this is for br and sc changes during biome
                                 biome_change(biome)
                                 print(f"{last_biome} biome has ended.")
                                 print(f"[BIOME DETECTED]:Biome is now {current_biome}!")
@@ -269,14 +255,18 @@ with open(latest_log_file, 'r', encoding='utf-8', errors='ignore') as file:
                                 response = webhook.execute()
                                 break
 
-                            elif current_biome != "NORMAL" and current_biome == "NORMAL":  #checks if the biome changed to normal which means it ended normally
+                            elif current_biome == "NORMAL":  #checks if the biome changed to normal which means it ended normally
+                                                             # You had if current_biome != "NORMAL" and if current_biome == "NORMAL" which is always False. I assume you mean if current_biome == "NORMAL" -e
+                                                             # This code might look unreachable because current_biome is according to your IDE always initalised to "START" -e
                                 biome_change(biome)
                                 print(f"{current_biome} biome has ended.")
                                 webhook = discord_webhook.DiscordWebhook(url=biome_webhook_url)
                                 webhook.add_embed(get_end_biome_embed())
                                 response = webhook.execute()
                                 break
-                            elif biome != "NORMAL" and current_biome != "NORMAL":  #this checks if the biome is new from normal biome which means it does not need an end biome embed
+                            elif current_biome != "NORMAL": #this checks if the biome is new from normal biome which means it does not need an end biome embed
+                                                            # current_biome and biome are already different by the if statement at the top. -e
+                                                            # This code might look unreachable for same reason above. -e
                                 biome_change(biome)
                                 print(f"[BIOME DETECTED]:Biome is now {current_biome}!")
                                 webhook = discord_webhook.DiscordWebhook(url=biome_webhook_url)
@@ -293,40 +283,23 @@ with open(latest_log_file, 'r', encoding='utf-8', errors='ignore') as file:
 
             
 
-            if(
+            if current_biome is not None:
+                if auto_strange_controller and strange_controller_time < int(time.time()): # Fixed it hopefully :D -e
+                    if DO_NOT_SKIP_BIOMES.get(current_biome, False):                       # yes you did :D well done -a
+                        use_device(0)
+                    elif DO_NOT_SKIP_BIOMES.get(current_biome, True):
+                        strange_controller_time = int(time.time()) + 10
+                elif auto_biome_randomizer and biome_randomizer_time < int(time.time()):
+                    if DO_NOT_SKIP_BIOMES.get(current_biome, False):
+                        use_device(1)
+                    elif DO_NOT_SKIP_BIOMES.get(current_biome, True):
+                        biome_randomizer_time = int(time.time()) + 10
 
-                auto_strange_controller == True                         #checks if: strange controller option is on
-                and current_biome is not None                           #           the current biome isnt none, this stops no skip biomes getting skipped
-                and strange_controller_time < int(time.time())          #           strange controller timer is up
-                and not DO_NOT_SKIP_BIOMES.get(current_biome, False) ): #           makes sure you arent in a no skip biome
-                use_device(0)
-            elif(
-                
-                auto_biome_randomizer == True                           #exact same as above but for biome randomizer
-                and current_biome is not None
-                and biome_randomizer_time < int(time.time()) 
-                and not DO_NOT_SKIP_BIOMES.get(current_biome, False) ):
-                use_device(1)
+# else exit is useless, when macro_is_open == 0, the while statements ends on its own. -e
+# also, we should put the while macro_is_open loop in a main.py, and leave the biome detection (and auto sc and br) in separate files, even from each other. -e
+# i want the macro to kill the process if the menu gets closed so it doesnt keep running -a
+#can you do the moving because i have noclue how to do that and i think i would mess up and it would break, pwetty pwease🥺 -a
 
-            elif(
-                auto_strange_controller == True                         
-                and current_biome is not None                           
-                and strange_controller_time < int(time.time())         
-                and DO_NOT_SKIP_BIOMES.get(current_biome, True) ):     #if the timer is up but you are in a no skip biome it sets it to 10 seconds in the future
-                strange_controller_time = int(time.time()) + 10
-
-            elif(
-                auto_biome_randomizer == True                         
-                and current_biome is not None                           
-                and biome_randomizer_time < int(time.time())         
-                and DO_NOT_SKIP_BIOMES.get(current_biome, True) ):      #same as above but for biome randomizer       
-                biome_randomizer_time = int(time.time()) + 10
-                
-
-
-            
-                
-    else: exit  #kills terminal if the menu is closed
 
 
 
