@@ -1,4 +1,4 @@
-import os               #importhing stuff i might want
+import os               #importing stuff i might want
 import time
 import json
 import webbrowser
@@ -54,12 +54,12 @@ unix_timestamp = int(time.time())
 anti_afk_time = int(time.time()) + anti_afk_amount
 
 """Coordinates"""
-INVENTORY_OPEN_COORD = (34, 508) # Open inventory button x and y coords
-INVENTORY_SEARCHBAR_COORD = (819, 367) # Search bar x and y coords
-INVENTORY_FIRST_SLOT_COORD = (851, 470) #Device position in inventory x and y coords
-INVENTORY_AMOUNT_COORD = (574, 580) # Amount textbox x and y coords
-INVENTORY_USE_COORD = (686, 576) # Use button x and y coords
-INVENTORY_CLOSE_COORD = (1524, 233)
+inventory_open_coord = (34, 508) # Open inventory button x and y coords
+inventory_searchbar_coord = (819, 367) # Search bar x and y coords
+inventory_first_slot_coord = (851, 470) #Device position in inventory x and y coords
+inventory_amount_coord = (574, 580) # Amount textbox x and y coords
+inventory_use_coord = (686, 576) # Use button x and y coords
+inventory_close_coord = (1524, 233) # Close button x and y coords
 
 
 
@@ -111,6 +111,8 @@ def biome_change(biome: str):
             current_biome = biome
             return last_biome, current_biome
 
+
+
 def click_at(x, y):
     pydirectinput.moveTo(x-1, y)
     pydirectinput.moveRel(1, 0)                     #moves 1 pixel so the game registers the cursor, it is accounted for with the x-1
@@ -120,17 +122,16 @@ def click_at(x, y):
 def double_click_at(x, y):
     pydirectinput.moveTo(x-1, y)
     pydirectinput.moveRel(1, 0)                     #same as above
-    pydirectinput.click()
-    time.sleep(0.1)
-    pydirectinput.click()
-    time.sleep(0.1)                                 #same as above
+    for n in range(2):
+        pydirectinput.click()
+        time.sleep(0.1)
 
 def use_device(k: int):
     global strange_controller_time
     global biome_randomizer_time
     """If k is 0, then uses SC. If k is 1, then uses BR."""
-    click_at(*INVENTORY_OPEN_COORD)
-    click_at(*INVENTORY_SEARCHBAR_COORD)
+    click_at(*inventory_open_coord)
+    click_at(*inventory_searchbar_coord)
     if k == 0:
         keyboard.write("strange ")
         keyboard.write("controller")
@@ -138,36 +139,33 @@ def use_device(k: int):
     elif k == 1:
         keyboard.write("biome ")
         keyboard.write("randomizer")
-        biome_randomizer_time = int(time.time()) + 2130     #sets biome randomiser time to 35m 30s in the future
-    click_at(*INVENTORY_FIRST_SLOT_COORD)
-    double_click_at(*INVENTORY_AMOUNT_COORD)
+        biome_randomizer_time = int(time.time()) + 2130     #sets biome randomizer time to 35m 30s in the future
+    click_at(*inventory_first_slot_coord)
+    double_click_at(*inventory_amount_coord)
     keyboard.write("1")
-    click_at(*INVENTORY_USE_COORD)
-    click_at(*INVENTORY_CLOSE_COORD)
+    click_at(*inventory_use_coord)
+    click_at(*inventory_close_coord)
 
 def anti_afk_action():
+    """Type 1 is jump, Type 2 is move up and down, Type 3 is uhhhh???"""
     if anti_afk_action_type == 1:
         pyautogui.keyDown('space')
         time.sleep(0.2)
         pyautogui.keyUp('space')
     elif anti_afk_action_type == 2:
-        pyautogui.keyDown('w')
-        time.sleep(0.1)
-        pyautogui.keyUp('w')    
-        time.sleep(0.1)
-        pyautogui.keyDown('s')
-        time.sleep(0.1)
-        pyautogui.keyUp('s')
-        time.sleep(0.1)
+        keypresses = ['w', 's']
+        for k in keypresses:
+            pyautogui.keyDown(k)
+            time.sleep(0.1)
+            pyautogui.keyUp(k)
+            time.sleep(0.1)
     elif anti_afk_action_type == 3:
-        pyautogui.keyDown('o')
-        time.sleep(0.1)
-        pyautogui.keyUp('o')
-        time.sleep(0.1)
-        pyautogui.keyDown('i')
-        time.sleep(0.1)
-        pyautogui.keyUp('i')
-        time.sleep(0.1)
+        keypresses = ['o', 'i']
+        for k in keypresses:
+            pyautogui.keyDown(k)
+            time.sleep(0.1)
+            pyautogui.keyUp(k)
+            time.sleep(0.1)
     anti_afk_time = int(time.time()) + anti_afk_amount
     time.sleep(0.5)
 
@@ -181,11 +179,6 @@ def change_macro_state():
 
 
 keyboard.add_hotkey("j", change_macro_state)
-            
-
-
-
-
 
 
 screenWidth, screenHeight = pyautogui.size()
@@ -228,8 +221,6 @@ with open(latest_log_file, 'r', encoding='utf-8', errors='ignore') as file:
                     last_aura_string = match.group(0) #saves full match string
 
 
-
-
             
             #compare for biomes
             if biome_check == True:
@@ -270,39 +261,22 @@ with open(latest_log_file, 'r', encoding='utf-8', errors='ignore') as file:
             
 
             if(
-
-                auto_strange_controller == True                         #checks if: strange controller option is on
-                and current_biome is not None                           #           the current biome isnt none, this stops no skip biomes getting skipped
-                and strange_controller_time < int(time.time())          #           strange controller timer is up
-                and not DO_NOT_SKIP_BIOMES.get(current_biome, False) ): #           makes sure you arent in a no skip biome
-                use_device(0)
-            elif(
-                
-                auto_biome_randomizer == True                           #exact same as above but for biome randomizer
-                and current_biome is not None
-                and biome_randomizer_time < int(time.time()) 
-                and not DO_NOT_SKIP_BIOMES.get(current_biome, False) ):
-                use_device(1)
-
-            elif(
-                auto_strange_controller == True                         
-                and current_biome is not None                           
-                and strange_controller_time < int(time.time())         
-                and DO_NOT_SKIP_BIOMES.get(current_biome, True) ):     #if the timer is up but you are in a no skip biome it sets it to 10 seconds in the future
-                strange_controller_time = int(time.time()) + 10
-
-            elif(
-                auto_biome_randomizer == True                         
-                and current_biome is not None                           
-                and biome_randomizer_time < int(time.time())         
-                and DO_NOT_SKIP_BIOMES.get(current_biome, True) ):      #same as above but for biome randomizer       
-                biome_randomizer_time = int(time.time()) + 10
+                current_biome is not None
+                and strange_controller_time < int(time.time())):
+                    if DO_NOT_SKIP_BIOMES.get(current_biome, False):
+                        if auto_strange_controller:
+                            use_device(0)
+                        if auto_biome_randomizer:
+                            use_device(1)
+                    elif DO_NOT_SKIP_BIOMES.get(current_biome, True):
+                        if auto_strange_controller:
+                            strange_controller_time = int(time.time()) + 10
+                        if auto_biome_randomizer:
+                            biome_randomizer_time = int(time.time()) + 10
                 
 
-
-            
-                
     else: exit  #kills terminal if the menu is closed
+
 
 
 
