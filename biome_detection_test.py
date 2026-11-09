@@ -99,8 +99,7 @@ def get_current_log_file():
     log_files = glob.glob(search_pattern)                       #glob uses above search pattern to find current log
     if not log_files:
         raise FileNotFoundError("no log found")                 #if no log is found it raises a warning
-
-    latest_log = max(log_files, key=os.path.getmtime)   
+    latest_log = max(log_files, key=os.path.getmtime)
     return latest_log
 
 def biome_change(biome: str):
@@ -109,7 +108,6 @@ def biome_change(biome: str):
     last_biome = current_biome
     current_biome = biome
     return last_biome, current_biome
-
 
 
 def click_at(x: int, y: int):
@@ -206,7 +204,7 @@ with open(latest_log_file, 'r', encoding='utf-8', errors='ignore') as file:
             clean_line = line.strip()
 
             #check for equipped auras
-            if aura_check: # "if var == True" is the same as "if var"
+            if aura_check: # "if var == True" is the same as "if var" -e
                 match = re.search(r'Equipped \\"([^"]+)\\"', clean_line)
                 if match and match.group(0) != last_aura_string:
                     extracted_aura = match.group(1) #get text string
@@ -222,11 +220,11 @@ with open(latest_log_file, 'r', encoding='utf-8', errors='ignore') as file:
 
             
             #compare for biomes
-            if biome_check: # "if var == true" is the same as "if var"
+            if biome_check: # "if var == true" is the same as "if var" -e
                 for biome in BIOMES:
-                    if biome in clean_line.upper():
+                    if biome in clean_line.upper(): # i have no idea how this works. -e
                         if current_biome != biome:
-                            if biome != current_biome and last_biome != "NORMAL" and last_biome != "START":    #checks if biome is not the last registered biome and is not normal, this is for br and sc changes during biome
+                            if last_biome != "NORMAL" and last_biome != "START":    #checks if biome is not the last registered biome and is not normal, this is for br and sc changes during biome
                                 biome_change(biome)
                                 print(f"{last_biome} biome has ended.")
                                 print(f"[BIOME DETECTED]:Biome is now {current_biome}!")
@@ -236,14 +234,18 @@ with open(latest_log_file, 'r', encoding='utf-8', errors='ignore') as file:
                                 response = webhook.execute()
                                 break
 
-                            elif current_biome != "NORMAL" and current_biome == "NORMAL":  #checks if the biome changed to normal which means it ended normally
+                            elif current_biome == "NORMAL":  #checks if the biome changed to normal which means it ended normally
+                                                             # You had if current_biome != "NORMAL" and if current_biome == "NORMAL" which is always False. I assume you mean if current_biome == "NORMAL" -e
+                                                             # This code might look unreachable because current_biome is according to your IDE always initalised to "START" -e
                                 biome_change(biome)
                                 print(f"{current_biome} biome has ended.")
                                 webhook = discord_webhook.DiscordWebhook(url=biome_webhook_url)
                                 webhook.add_embed(get_end_biome_embed())
                                 response = webhook.execute()
                                 break
-                            elif biome != "NORMAL" and current_biome != "NORMAL":  #this checks if the biome is new from normal biome which means it does not need an end biome embed
+                            elif current_biome != "NORMAL": #this checks if the biome is new from normal biome which means it does not need an end biome embed
+                                                            # current_biome and biome are already different by the if statement at the top. -e
+                                                            # This code might look unreachable for same reason above. -e
                                 biome_change(biome)
                                 print(f"[BIOME DETECTED]:Biome is now {current_biome}!")
                                 webhook = discord_webhook.DiscordWebhook(url=biome_webhook_url)
@@ -259,23 +261,20 @@ with open(latest_log_file, 'r', encoding='utf-8', errors='ignore') as file:
 
             
 
-            if(
-                current_biome is not None
-                and strange_controller_time < int(time.time())):
+            if current_biome is not None:
+                if auto_strange_controller and strange_controller_time < int(time.time()): # Fixed it hopefully :D -e
                     if DO_NOT_SKIP_BIOMES.get(current_biome, False):
-                        if auto_strange_controller:
-                            use_device(0)
-                        if auto_biome_randomizer:
-                            use_device(1)
+                        use_device(0)
                     elif DO_NOT_SKIP_BIOMES.get(current_biome, True):
-                        if auto_strange_controller:
-                            strange_controller_time = int(time.time()) + 10
-                        if auto_biome_randomizer:
-                            biome_randomizer_time = int(time.time()) + 10
-                
+                        strange_controller_time = int(time.time()) + 10
+                elif auto_biome_randomizer and biome_randomizer_time < int(time.time()):
+                    if DO_NOT_SKIP_BIOMES.get(current_biome, False):
+                        use_device(1)
+                    elif DO_NOT_SKIP_BIOMES.get(current_biome, True):
+                        biome_randomizer_time = int(time.time()) + 10
 
-# else exit is useless, when macro_is_open == 0, the while statements ends on its own.
-# also, we should put the while macro_is_open loop in a main.py, and leave the biome detection (and auto sc and br) in separate files, even from each other.
+# else exit is useless, when macro_is_open == 0, the while statements ends on its own. -e
+# also, we should put the while macro_is_open loop in a main.py, and leave the biome detection (and auto sc and br) in separate files, even from each other. -e
 
 
 
