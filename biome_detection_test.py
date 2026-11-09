@@ -32,12 +32,11 @@ last_aura_string = None
 biome_randomizer_time = 0
 strange_controller_time = 0
 macro_state = 0
-is_macro_open = 1       #this will detect if the menu is open, if it is closed it will terminate the macro
+is_macro_open = 1       #this will detect if the menu is open, if it is closed (if 0) it will terminate the macro
 
 """Variables from JSON"""
 search_stuff = config["search_stuff"]
-search_word = search_stuff["search_word"]       #sets all my variables from json
-before_aura = search_stuff["before_aura"]
+search_word = search_stuff["search_word"]       #sets all variables from JSON
 after_aura = search_stuff["after_aura"]
 server_link = settings["server_link"]
 biome_webhook_url = settings["biome_webhook_url"]
@@ -105,21 +104,21 @@ def get_current_log_file():
     return latest_log
 
 def biome_change(biome: str):
-            """Fixes the last_biome and current_biome variables upon the biome changing.""" #w edo
-            global last_biome, current_biome
-            last_biome = current_biome
-            current_biome = biome
-            return last_biome, current_biome
+    """Fixes the last_biome and current_biome variables upon the biome changing.""" #w edo
+    global last_biome, current_biome
+    last_biome = current_biome
+    current_biome = biome
+    return last_biome, current_biome
 
 
 
-def click_at(x, y):
+def click_at(x: int, y: int):
     pydirectinput.moveTo(x-1, y)
     pydirectinput.moveRel(1, 0)                     #moves 1 pixel so the game registers the cursor, it is accounted for with the x-1
     pydirectinput.click()
     time.sleep(0.1)                                 #waits 10ms to make
 
-def double_click_at(x, y):
+def double_click_at(x: int, y: int):
     pydirectinput.moveTo(x-1, y)
     pydirectinput.moveRel(1, 0)                     #same as above
     for n in range(2):
@@ -127,9 +126,9 @@ def double_click_at(x, y):
         time.sleep(0.1)
 
 def use_device(k: int):
+    """If k is 0, then uses SC. If k is 1, then uses BR."""
     global strange_controller_time
     global biome_randomizer_time
-    """If k is 0, then uses SC. If k is 1, then uses BR."""
     click_at(*inventory_open_coord)
     click_at(*inventory_searchbar_coord)
     if k == 0:
@@ -207,7 +206,7 @@ with open(latest_log_file, 'r', encoding='utf-8', errors='ignore') as file:
             clean_line = line.strip()
 
             #check for equipped auras
-            if aura_check == True:
+            if aura_check: # "if var == True" is the same as "if var"
                 match = re.search(r'Equipped \\"([^"]+)\\"', clean_line)
                 if match and match.group(0) != last_aura_string:
                     extracted_aura = match.group(1) #get text string
@@ -223,7 +222,7 @@ with open(latest_log_file, 'r', encoding='utf-8', errors='ignore') as file:
 
             
             #compare for biomes
-            if biome_check == True:
+            if biome_check: # "if var == true" is the same as "if var"
                 for biome in BIOMES:
                     if biome in clean_line.upper():
                         if current_biome != biome:
@@ -275,7 +274,8 @@ with open(latest_log_file, 'r', encoding='utf-8', errors='ignore') as file:
                             biome_randomizer_time = int(time.time()) + 10
                 
 
-    else: exit  #kills terminal if the menu is closed
+# else exit is useless, when macro_is_open == 0, the while statements ends on its own.
+# also, we should put the while macro_is_open loop in a main.py, and leave the biome detection (and auto sc and br) in separate files, even from each other.
 
 
 
