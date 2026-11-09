@@ -25,6 +25,13 @@ BIOMES = list(BIOME_COLORS)
 DO_NOT_SKIP_BIOMES = config["do_not_skip_biomes"]
 settings = config["settings"]         #puts the lists under the names settings
 
+with open(os.path.join(os.path.dirname(__file__), "webhooks.json"), encoding="utf-8") as f:
+    webhooks = json.load(f)
+
+biome_webhook_url = webhooks["biome_webhook_url"]           #this loads webhook urls and server link from webhooks.json
+aura_webhook_url = webhooks["aura_webhook_url"]
+server_link = webhooks["server_link"]
+
 current_biome = "START"
 last_biome = None
 equipped_aura = None
@@ -39,9 +46,6 @@ is_macro_open = 1       #this will detect if the menu is open, if it is closed (
 search_stuff = config["search_stuff"]
 search_word = search_stuff["search_word"]       #sets all variables from JSON
 after_aura = search_stuff["after_aura"]
-server_link = settings["server_link"]
-biome_webhook_url = settings["biome_webhook_url"]
-aura_webhook_url = settings["aura_webhook_url"]
 aura_check = settings["aura_check"]
 biome_check = settings["biome_check"]
 auto_strange_controller = settings["auto_strange_contoller"]
@@ -68,12 +72,15 @@ inventory_close_coord = (1524, 233) # Close button x and y coords
 #embed for biome start
 def get_start_biome_embed():
     unix_timestamp = int(time.time())
-    return discord_webhook.DiscordEmbed(
+    thumbnail_name = f"{current_biome.replace(' ', '')}.png"
+    embed = discord_webhook.DiscordEmbed(
         title=f"{current_biome} has started,",
-        description=f"{current_biome} biome has started <t:{unix_timestamp}:R>.",
+        description=f"{current_biome} biome has started <t:{unix_timestamp}:R>.\n{server_link}",
         color=BIOME_COLORS.get(current_biome, 0x808080),
-        url=biome_webhook_url
-        )
+    )
+    embed.set_thumbnail(url=f"attachment://{thumbnail_name}")
+    embed.set_footer(text="Adams Macro Nuke")
+    return embed
 
 #embed for biome end
 def get_end_biome_embed():
@@ -84,7 +91,7 @@ def get_end_biome_embed():
         color=BIOME_COLORS.get(last_biome, 0x808080)
         )
 
-#embed for aura equip
+#embed for aura 1
 def get_aura_embed():
     return discord_webhook.DiscordEmbed(
         title=f"{extracted_aura} has been equipped",
@@ -92,6 +99,14 @@ def get_aura_embed():
         color=0x00d62b
         )
 
+def attach_biome_thumbnail(webhook):
+    thumbnail_name = f"{current_biome.replace(' ', '')}.png"
+    thumbnail_path = os.path.join(
+        os.path.dirname(__file__), "images", thumbnail_name
+    )
+
+    with open(thumbnail_path, "rb") as thumbnail_file:
+        webhook.add_file(file=thumbnail_file.read(), filename=thumbnail_name)
 
 
 def get_current_log_file():
@@ -132,10 +147,12 @@ def use_device(k: int):
     click_at(*inventory_searchbar_coord)
     if k == 0:
         keyboard.write("strange ")
+        time.sleep(0.1)
         keyboard.write("controller")
         strange_controller_time = int(time.time())  + 1230  #sets strange controller time to 20m 30s in the future
     elif k == 1:
         keyboard.write("biome ")
+        time.sleep(0.1)
         keyboard.write("randomizer")
         biome_randomizer_time = int(time.time()) + 2130     #sets biome randomizer time to 35m 30s in the future
     click_at(*inventory_first_slot_coord)
@@ -171,8 +188,10 @@ def change_macro_state():
     global macro_state   
     if macro_state == 1:
         macro_state = 0
+        print("macro stopped")
     else:
         macro_state = 1
+        print("macro started")
 
 
 
@@ -232,6 +251,7 @@ with open(latest_log_file, 'r', encoding='utf-8', errors='ignore') as file:
                                 webhook = discord_webhook.DiscordWebhook(url=biome_webhook_url)
                                 webhook.add_embed(get_end_biome_embed())
                                 webhook.add_embed(get_start_biome_embed())
+                                attach_biome_thumbnail(webhook)
                                 response = webhook.execute()
                                 break
 
@@ -251,6 +271,7 @@ with open(latest_log_file, 'r', encoding='utf-8', errors='ignore') as file:
                                 print(f"[BIOME DETECTED]:Biome is now {current_biome}!")
                                 webhook = discord_webhook.DiscordWebhook(url=biome_webhook_url)
                                 webhook.add_embed(get_start_biome_embed())
+                                attach_biome_thumbnail(webhook)
                                 response = webhook.execute()
                                 break
                             else: continue
@@ -278,7 +299,6 @@ with open(latest_log_file, 'r', encoding='utf-8', errors='ignore') as file:
 # also, we should put the while macro_is_open loop in a main.py, and leave the biome detection (and auto sc and br) in separate files, even from each other. -e
 # i want the macro to kill the process if the menu gets closed so it doesnt keep running -a
 #can you do the moving because i have noclue how to do that and i think i would mess up and it would break, pwetty pwease🥺 -a
-
 
 
 
