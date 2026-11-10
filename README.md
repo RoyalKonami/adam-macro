@@ -11,4 +11,4 @@ fishing
 
 thank you edo for helping me and rudra for making a menu ❤️‍🩹🥹
 
-py -m pip install psutil discord-webhook customtkinter pydirectinput pyautogui keyboard Pillow pywin32
+py -m pip install psutil discord-webhook customtkinter pydirectinput pyautogui keyboard Pillow pywin32 mss
