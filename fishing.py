@@ -17,22 +17,54 @@ import pydirectinput
 import pyautogui
 import keyboard
 
+
 location = 0        #0 is spawn, 1 is flarg, 2 is fishing spot
+fishing_state = 0   #0 is nothing, 1 is fish button is onscreen, 2 is exit fising button is onscreen
+collection_open = (31, 451)
+collection_exit = (384, 126)
 flarg_sell_open = (959, 942)
 flarg_first_fish = (829, 411)
 flarg_sell_all = (665, 802)
 flarg_confirm_sell = (794, 621)
 flarg_exit = (1459, 261)
+monitor = {"top": 770, "left": 758, "width": 403, "height": 1}          #this sets the fishing area to be monitored, its 1 pixel high to reduce lag
+fish_pixel_coord = (849, 836)
+fish_pixel_rgb_ref = (120, 140, 255)
+exit_fishing_pixel_rgb_ref = (255, 117, 117)           #these are reference colour values for checking against the testing pixel
+fishing_bar_rgb = (0, 0, 0)
+testing_pixel_rgb = (0, 0, 0)
 
+
+
+
+
+def kill_loop():
+    exit
 
 def get_pixels():
     with mss.MSS() as sct:
-        monitor = {"top": 770, "left": 758, "width": 403, "height": 1 }    #sets scanning area to be the width of the fish box and 1 pixel high to make it take less cpu than reading the whole box
-        output = "sct-{top}x{left}_{width}x{height}.png".format(**monitor)
-        sct_img = sct.grab(monitor)
-        mss.tools.to_png(sct_img.rgb, sct_img.size, output=output)
-        png = mss.tools.to_png(sct_img.rgb, sct_img.size)
-        print(png)
+        while True:
+            rgb = sct.grab(monitor).rgb        #check for a similar color at any scanned pixel
+            target = (fishing_bar_rgb)
+            tolerance = 25
+            found = any(
+                all(abs(rgb[i + channel] - target[channel]) <= tolerance
+                    for channel in range(3))
+                for i in range(0, len(rgb), 3)
+                )
+                                            
+            if found:
+                print("Color found")
+
+            time.sleep(0.1) 
+
+def sample_pixel(x, y):
+    with mss.MSS() as sct:
+        pixel = sct.grab({"left": x, "top": y, "width": 1, "height": 1})
+        return tuple(pixel.rgb)
+    
+
+
 
 def click_at(x: int, y: int):
     pydirectinput.moveTo(x-1, y)
@@ -48,7 +80,7 @@ def double_click_at(x: int, y: int):
         time.sleep(0.1)
 
 def orient_camera():
-    click_at(*collection)
+    click_at(*collection_open)
     time.sleep(0.1)
     click_at(*collection_exit)
     time.sleep(0.1)
@@ -111,6 +143,22 @@ def sell_to_flarg(loops):
     click_at(flarg_sell_open)
     time.sleep(0.1)
     for _ in range (loops):
-        click_at(*larg_first_fish)
+        click_at(*flarg_first_fish)
         click_at(*flarg_sell_all)
         click_at(*flarg_confirm_sell)
+
+def check_fishing_state():
+    testing_pixel_rgb = sample_pixel(*fish_pixel_coord)
+    if testing_pixel_rgb == fish_pixel_rgb_ref:
+        fishing_state = 1
+    
+    elif testing_pixel_rgb == exit_fishing_pixel_rgb_ref:
+        fishing_state = 2
+    print(f"Fishing state is {fishing_state}")
+    time.sleep(1)
+
+keyboard.add_hotkey("k", kill_loop)
+
+
+
+    

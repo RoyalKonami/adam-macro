@@ -16,6 +16,9 @@ import pyautogui
 import keyboard
 from PIL import Image
 
+def kill_loop():
+    exit
+
 
 with open(os.path.join(os.path.dirname(__file__), "config.json"), encoding="utf-8") as config_file:
     config = json.load(config_file)    #selects the config file to load the stuff from
@@ -196,6 +199,7 @@ def change_macro_state():
 
 
 keyboard.add_hotkey("j", change_macro_state)
+keyboard.add_hotkey("k", kill_loop)
 
 
 screenWidth, screenHeight = pyautogui.size()
